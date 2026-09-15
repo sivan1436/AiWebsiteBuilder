@@ -5,6 +5,8 @@ import dns from "dns";
 import authRouter from "./Routes/auth.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import userRouter from "./Routes/userRoutes.js";
+
 
 
 dns.setServers(["8.8.8.8","8.8.4.4"]);
@@ -18,10 +20,11 @@ const port = process.env.PORT || 4000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin:"http://localhost:3000",
+    origin:"http://localhost:5173",
     credentials: true
 }));
 app.use("/api/auth",authRouter);
+app.use("/api/user",userRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

@@ -1,4 +1,4 @@
-import User from "../models/user.model.js";
+import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 
 export async function googleAuth(req,res){
@@ -24,7 +24,7 @@ export async function googleAuth(req,res){
         sameSite: "strict",
          maxAge: 7 * 24 * 60 * 60 * 1000
        })
-       return res.status(201).json({user, token});
+       return res.status(201).json({newUser, token});
     }
      catch (error) {
         return res.status(500).json({message: "google auth error", error})

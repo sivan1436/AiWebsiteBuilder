@@ -1,7 +1,25 @@
 import React from 'react'
+import { auth, provider } from '../firebase';
+import { signInWithPopup } from 'firebase/auth';
+import axios from 'axios';
 import {AnimatePresence, motion} from "motion/react"
 import {X} from "lucide-react"
 function LoginModel({open,onClose}) {
+  async function handleGoogleLogin(){
+    try{
+      const result = await signInWithPopup(auth, provider);
+      console.log(result);
+      const {data} =await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/google`,{
+        name: result.user.displayName,
+        email: result.user.email,
+        avatar: result.user.photoURL
+      },{withCredentials:true});
+      console.log(data);
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
   return (
     <AnimatePresence>
     {open && (
@@ -49,6 +67,7 @@ function LoginModel({open,onClose}) {
     </span>
     </h2>
    <motion.button
+   onClick={handleGoogleLogin}
    whileHover={{scale:1.04}}
    whileTap={{scale:0.96}}
    className='group relative w-full h-13 rounded-xl bg-white
@@ -61,6 +80,16 @@ function LoginModel({open,onClose}) {
    </div>
 
    </motion.button>
+   <div className='flex items-center gap-4 my-10'>
+    <div className='flex-1 h-px bg-white/10'/>
+      <span className='text-xs text-zinc-500 tracking-wide'>Secure Login</span>
+    <div className='flex-1 h-px bg-white/10'/>
+   </div>
+   <p className='text-xs text-zinc-500 leading-relaxed'>
+    By continueing you agree to our <span className='underline cursor-pointer hover:text-zinc-300'>Terms of Service</span> and <span className='underline cursor-pointer hover:text-zinc-300'>
+      Privacy Policy
+      </span>
+   </p>
   </div>
    </div>
  
