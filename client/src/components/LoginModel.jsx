@@ -4,7 +4,13 @@ import { signInWithPopup } from 'firebase/auth';
 import axios from 'axios';
 import {AnimatePresence, motion} from "motion/react"
 import {X} from "lucide-react"
+import { useDispatch } from 'react-redux';
+import { setUserData } from '../redux/userSlice.js';
+
+
+
 function LoginModel({open,onClose}) {
+  const dispatch = useDispatch();
   async function handleGoogleLogin(){
     try{
       const result = await signInWithPopup(auth, provider);
@@ -14,7 +20,8 @@ function LoginModel({open,onClose}) {
         email: result.user.email,
         avatar: result.user.photoURL
       },{withCredentials:true});
-      console.log(data);
+      dispatch(setUserData(data.user));
+      onClose();
     }
     catch(error){
       console.error(error);
