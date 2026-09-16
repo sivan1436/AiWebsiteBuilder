@@ -14,7 +14,7 @@ function Dashbord() {
   return (
     <div className='min-h-screen  bg-black text-white'>
       <div className='sticky top-0 z-40 backdrop-blur-xl 
-      bg-black/50 border-b border-white/10'>
+      bg-black/50 border-b border-white/10'>               
         <div className='max-w-7xl mx-auto px-6 h-16 
         flex justify-between items-center'>
           <div className='flex items-center gap-4'>
