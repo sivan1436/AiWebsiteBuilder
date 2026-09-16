@@ -2,7 +2,7 @@
 
 const openRouterUrl = "https://openrouter.ai/api/v1/chat/completions"
 
-const model = "inclusionai/ling-3.0-flash-vl:free";
+const model = "openrouter/free";
 export async function generateResponse(prompt,req,res) {
     const response = await fetch(openRouterUrl, {
         method: 'POST',

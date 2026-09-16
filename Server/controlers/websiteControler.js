@@ -3,7 +3,7 @@ import extractJson from "../utils/extractJson.js";
 import Website from "../models/websiteModel.js";
 import User from "../models/userModel.js";
 
-const masterPrompt =`YOU ARE A PRICIPAL FRONTEND ARCHITECT
+const masterPrompt = `YOU ARE A PRICIPAL FRONTEND ARCHITECT
 AND A SENIOR UI/UX ENGINEER SPECIALIZED IN RESPONSIVE DESIGN SYSTEM.
 YOU BUILD HIGH-END REAL-WORLD PRODUCTION-GRADE WEBSITES
 USING ONLY HTML,CSS AND JAVASCRIPT THAT WORK PERFECTLY ON ALL SCREEN SIZES.
@@ -137,70 +137,173 @@ FUNCTIONAL REQUIREMENTS
  -formate must match exactly as specified
  -IF FORMATE IS BROKEN-> RESPONSE IS INVALID`;
 
-export async function GenerateWebSite(req,res) {
-    try{
-    const {prompt} = req.body
-    if(!prompt){
-        return res.status(400).json({
-            message:"prompt is required"
-        })
-    }
-    const user = await User.findById(req.user._id)
-    if(!user){
-        return res.status(400).json({
-            message :"user not found"
-        })
-    }
-    if(user.credits <50){
-        return res.status(400).json({message:"insufficient credits"})
-    }
-    const finalPrompt = masterPrompt.replace("{USER_PROMPT}",prompt)
-    let raw =""
-    let parsed = null
-    for(let i=0;i<3 && !parsed;i++){
-        raw = await generateResponse(finalPrompt,req,res)
-        parsed = await extractJson(raw)
-        if(!parsed){
-            raw = await generateResponse(finalPrompt + "\n\nRETURN ONLY RAW JSON.",req,res)
-            parsed = await extractJson(raw)
+export async function GenerateWebSite(req, res) {
+    try {
+        const { prompt } = req.body
+        if (!prompt) {
+            return res.status(400).json({
+                message: "prompt is required"
+            })
         }
-    }
-    if(!parsed.code){
-        console.log("parsed.code is missing, raw response:", raw)
-        return res.status(500).json({
-            message:"website generation failed",
-            error:"parsed.code is missing"
+        const user = await User.findById(req.user._id)
+        if (!user) {
+            return res.status(400).json({
+                message: "user not found"
+            })
+        }
+        if (user.credits < 50) {
+            return res.status(400).json({ message: "insufficient credits" })
+        }
+        const finalPrompt = masterPrompt.replace("{USER_PROMPT}", prompt)
+        let raw = ""
+        let parsed = null
+        for (let i = 0; i < 3 && !parsed; i++) {
+            raw = await generateResponse(finalPrompt, req, res)
+            parsed = await extractJson(raw)
+            if (!parsed) {
+                raw = await generateResponse(finalPrompt + "\n\nRETURN ONLY RAW JSON.", req, res)
+                parsed = await extractJson(raw)
+            }
+        }
+        if (!parsed.code) {
+            console.log("parsed.code is missing, raw response:", raw)
+            return res.status(500).json({
+                message: "website generation failed",
+                error: "parsed.code is missing"
+            })
+        }
+        const website = await Website.create({
+            user: user._id,
+            title: prompt.slice(0, 50),
+            latestCode: parsed.code,
+            conversation: [{ role: "user", content: prompt }, { role: "Ai", content: parsed.message }]
         })
-    }
-    const website = await Website.create({
-        user:user._id,
-        title:prompt.slice(0,50),
-        latestCode:parsed.code,
-        conversation:[{role:"user",content:prompt},{role:"Ai",content:parsed.message}]
-    })  
-    user.credits -= 50
-    await user.save()
+        user.credits -= 50
+        await user.save()
         return res.status(200).json({
-            Website:website._id,
-        remainingCredits:user.credits})
+            Website: website._id,
+            remainingCredits: user.credits
+        })
 
 
     }
     catch (error) {
         return res.status(500).json({
-            message:"website generation failed",
-            error:error.message
+            message: "website generation failed",
+            error: error.message
         })
     }
-    
+
 }
 
-export async function getWebsiteById(req,res) {
-    try{
+export async function getWebsiteById(req, res) {
+    try {
+        const website = await Website.findOne({
+            _id: req.params.id,
+            user: req.user._id
+        });
+        if (!website) {
+            return res.status(404).json({
+                message: "website not found"
+            })
+        }
+        return res.status(200).json(website)
+    }
+    catch (errror) {
+        return res.status(500).json({ message: "failed to fetch website", error: errror.message })
+    }
+
+}
+
+export async function Changes(req, res) {
+    try {
+
+        const { prompt } = req.body
+        if (!prompt) {
+            return res.status(400).json({
+                message: "prompt is required"
+            })
+        }
+        const website = await Website.findOne({
+            _id: req.params.id,
+            user: req.user._id
+        });
+        if (!website) {
+            return res.status(404).json({
+                message: "website not found"
+            })
+        }
+        const user = await User.findById(req.user._id)
+        if (!user) {
+            return res.status(400).json({
+                message: "user not found"
+            })
+        }
+        if (user.credits < 25) {
+            return res.status(400).json({ message: "insufficient credits" })
+        }
+        const updatePrompt = `UPDATE THIS WEBSIT
+    CURRENT CODE:
+    ${website.latestCode}
+    USER REQUEST:
+    ${prompt}
+    RETURN RAW JSON ONLY:
+    {"message : "short confirmation",
+    "code" : "<UPDATED FULL HTML >
+    }`
+        let raw = ""
+        let parsed = null
+        for (let i = 0; i < 3 && !parsed; i++) {
+            raw = await generateResponse(updatePrompt, req, res)
+            parsed = await extractJson(raw)
+            if (!parsed) {
+                raw = await generateResponse(updatePrompt + "\n\nRETURN ONLY RAW JSON.", req, res)
+                parsed = await extractJson(raw)
+            }
+        }
+        if (!parsed.code) {
+            console.log("parsed.code is missing, raw response:", raw)
+            return res.status(500).json({
+                message: "website generation failed",
+                error: "parsed.code is missing"
+            })
+        }
+        website.conversation.push({ role: "user", content: prompt }, { role: "Ai", content: parsed.message })
+        website.latestCode = parsed.code
+        await website.save()
+        user.credits -= 25
+        await user.save()
+        return res.status(200).json({
+            message: parsed.message,
+            code:parsed.code,
+            remainingCredits: user.credits
+        })
+
 
     }
-    catch{
-        
+    catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            message: "website updation failed",
+            error: error.message
+        })
+
+    }
+}
+
+
+
+export async function getAllWeb(req,res) {
+    try{
+    const websites = await Website.find({user : req.user._id})
+    return res.status(200).json(websites)
+}
+    catch(error){
+        console.log(error)
+        return res.status(500).json({
+            message:"error to get user websites"
+        })
+
     }
     
 }
