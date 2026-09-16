@@ -1,4 +1,5 @@
-
+import { generateResponse } from "../config/openRouter.js";
+import extractJson from "../utils/extractJson.js";
 
 export async function getCurrentUser(req,res){
 try{
@@ -15,3 +16,18 @@ catch(error){
 }
 }    
 
+export async function GenerateWebSite(req,res) {
+    try{
+      const result = await generateResponse("hello")
+      const data = await extractJson(result)
+      return res.status(200).json(data)
+
+    }
+    catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            message:"website generation failed",
+            error:error.message
+        })
+    }
+}

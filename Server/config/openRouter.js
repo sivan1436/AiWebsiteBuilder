@@ -4,7 +4,7 @@ const openRouterUrl = "https://openrouter.ai/api/v1/chat/completions"
 
 const model = "nvidia/nemotron-3-ultra-550b-a55b:free"
 
-async function generateResponse(prompt) {
+export async function generateResponse(prompt,req,res) {
     const response = await fetch(openRouterUrl, {
         method: 'POST',
         headers: {
@@ -26,10 +26,10 @@ async function generateResponse(prompt) {
         }),
     });
     if (!response.ok) {
-        const err = await res.text()
+        const err = await response.json()
         throw new Error("openRouter error"+err)
     }
- const data = await res.json()  
- return data
+ const data = await response.json()  
+ return data.choices[0].message.content
 }
 
