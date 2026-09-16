@@ -125,7 +125,7 @@ FUNCTIONAL REQUIREMENTS
  OUTPUT FORMAT(RAW JSON ONLY)
  ---------------------------------------------------------
  {"message":"short professional confirmation sentence",
- ""code" :"<FULL VALID HTML CODE>"}
+ "code":"<FULL VALID HTML CODE>"}
  
  --------------------------------------------------------
  ABSOLUTE RULES(MANDATORY)
@@ -191,6 +191,16 @@ export async function GenerateWebSite(req,res) {
             message:"website generation failed",
             error:error.message
         })
+    }
+    
+}
+
+export async function getWebsiteById(req,res) {
+    try{
+
+    }
+    catch{
+        
     }
     
 }

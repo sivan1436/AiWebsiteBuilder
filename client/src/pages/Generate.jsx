@@ -2,9 +2,23 @@ import React from 'react'
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { useState } from 'react';
+import axios from 'axios';
 
 function Generate() {
   const Navigate = useNavigate();
+  const [prompt,setPrompt] = useState("");
+  async function handleGenerateWebsite(prompt) {
+    try{
+      const result = await axios.post(`${import.meta.env.VITE_SERVER_URL}/website/generate`,{prompt},{withCredentials:true});
+      console.log(result)
+    
+    }
+    catch(err){
+      console.log(err)
+    }
+    
+  }
   return (
     <div className='min-h-screen bg-linear-to-r from-[#050505] via-[#0b0b0b] 
     to-[#050505] text-white'>
@@ -41,8 +55,7 @@ function Generate() {
           <h1 className='text-xl font-semibold mb-2'>Descibe your website</h1>
         <div className='relative'>
           <textarea
-          name=''
-          id='' 
+          onChange={(e)=>{setPrompt(e.target.value)}}
           placeholder='Describe your website in detail...'
           className='w-full h-56 p-6 rounded-3xl bg-black/60 border border-white/10 outline-none text-sm leading-relaxed
           focus:ring-2 focus:ring-white/20'>
@@ -56,6 +69,7 @@ function Generate() {
         <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{scale:0.96}}
+        onClick={() => handleGenerateWebsite(prompt)}
         className='px-14 py-4 rounded-2xl font-semibold text-lg bg-white text-black'>
          Generate website
 
