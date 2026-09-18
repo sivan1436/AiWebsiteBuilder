@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import Dashbord from './pages/Dashbord.jsx';
 import Generate from './pages/Generate.jsx';
 import { Navigate } from 'react-router-dom';
-import Editor from './pages/Editor.jsx';
+import WebEditor from './pages/WebEditor.jsx';
 
 
 
@@ -22,7 +22,7 @@ export default function App() {
 
     <Route path="/dashboard" element={userData ? <Dashbord/> : <Home />} />
     <Route path="/generate" element={userData ? <Generate/> : <Home />} />
-   <Route path="/editor/:id" element={userData?<Editor /> : <Home />}/>
+   <Route path="/editor/:id" element={userData?<WebEditor /> : <Home />}/>
    </Routes>
    </BrowserRouter>
   )
