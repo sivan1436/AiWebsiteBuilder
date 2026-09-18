@@ -20,6 +20,9 @@ function Home() {
   const [openLogin, setOpenLogin] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
   const [openProfile, setOpenProfile] = useState(false)
+  
+  
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -76,7 +79,7 @@ function Home() {
                   {!avatarError && userData.avatar ? (
                     <img
                       src={userData.avatar}
-                      alt={`${userData.name || 'User'} avatar`}
+                      alt={`${userData.name || 'User'} avatar`} referrerPolicy='no-referrer'
                       onError={() => setAvatarError(true)}
                       className='h-full w-full object-cover'
                     />

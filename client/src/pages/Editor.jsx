@@ -1,33 +1,74 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Code2, Monitor, Rocket,Send } from "lucide-react";
+import { Code2, Monitor, Rocket, Send } from "lucide-react";
 
 function Editor() {
   const [web, setWeb] = useState(null)
   const [error, setError] = useState(null)
-  const [code,setCode] = useState("")
-  const [message,setMessage] = useState([])
-  const [prompt,setPrompt] = useState("")
+  const [code, setCode] = useState("")
+  const [message, setMessage] = useState([])
+  const [prompt, setPrompt] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [loadingText, setLoadingText] = useState("Thinking...")
   const iframeRef = useRef(null)
   const { id } = useParams()
- 
-  async function handleUpdates(prompt) {
-    setMessage((m)=>[...m,{role:"user",content:prompt}])
-    try{
-    const result = await axios.post(`${import.meta.env.VITE_SERVER_URL}/website/update/${id}`, { prompt }, { withCredentials: true })
-    console.log(result) 
-    setCode(result.data.code)
-    setMessage(prev => [...prev, { role: "Ai", content: result.data.message }])
-  }
-    catch(error){
+
+  const ThinkingSteps = [
+    "Thinking...",
+    "Analyzing your request...",
+    "Generating code...",
+    "Almost there..."
+  ]
+
+  async function handleUpdates(inputPrompt) {
+    const typedPrompt = typeof inputPrompt === 'string' ? inputPrompt : prompt
+    const trimmedPrompt = typedPrompt.trim()
+
+    if (!trimmedPrompt || loading) return
+
+    setMessage((m) => [...m, { role: 'user', content: trimmedPrompt }, { role: 'Ai', content: '', isLoading: true }])
+    setPrompt('')
+    setError(null)
+    setLoading(true)
+
+    try {
+      const result = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/website/update/${id}`,
+        { prompt: trimmedPrompt },
+        { withCredentials: true }
+      )
+
+      setCode(result.data.code)
+      setLoading(false)
+      setMessage((prev) => {
+        const withoutLoading = prev.filter((msg) => !(msg.role === 'Ai' && msg.isLoading))
+        return [...withoutLoading, { role: 'Ai', content: result.data.message }]
+      })
+    } catch (error) {
       console.log(error)
-
+      setLoading(false)
+      setMessage((prev) => prev.filter((msg) => !(msg.role === 'Ai' && msg.isLoading)))
+      setError(error.response?.data?.message || 'Failed to update website')
     }
-    
   }
 
+  useEffect(() => {
+    if (!loading) {
+      setLoadingText("Thinking...")
+      return
+    }
 
+    let stepIndex = 0
+    setLoadingText(ThinkingSteps[0])
+
+    const interval = setInterval(() => {
+      stepIndex += 1
+      setLoadingText(ThinkingSteps[stepIndex % ThinkingSteps.length])
+    }, 12000)
+
+    return () => clearInterval(interval)
+  }, [loading])
   useEffect(() => {
     const getWebsite = async () => {
       try {
@@ -71,10 +112,51 @@ function Editor() {
     )
   }
   return (
-    <div className='w-screen h-screen flex bg-black text-white overflow-hidden'>
-      <aside className=' w-[min(20rem,38vw)] min-w-64 h-full shrink-0 flex flex-col border-r border-white/10 bg-zinc-950'>
+    <div className='w-screen h-screen flex bg-[#f5f5f5] text-zinc-900 overflow-hidden'>
+      <aside className='w-[min(22rem,38vw)] min-w-[18rem] h-full shrink-0 flex flex-col border-r border-zinc-200 bg-[#f5f5f5]'>
         <Header />
-        <Chat />
+        <div className='min-h-0 flex-1 flex flex-col bg-[#f5f5f5]'>
+          <div className='min-h-0 flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-[#f5f5f5]'>
+            {message.map((msg, index) => (
+              <div
+                key={index}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-6 shadow-sm ${msg.role === "user"
+                  ? "bg-[#111111] text-white rounded-br-md"
+                  : "bg-white text-zinc-800 border border-zinc-200 rounded-bl-md"}`}>
+                  {msg.isLoading ? (
+                    <span className='inline-block text-xs font-medium tracking-wide text-zinc-500'>{loadingText || 'Thinking...'}</span>
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className='shrink-0 border-t border-zinc-200 bg-[#f5f5f5] p-3'>
+            <div className='flex items-center gap-2 rounded-2xl border border-zinc-300 bg-white px-3 py-2 shadow-sm'>
+              <input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleUpdates(prompt)
+                  }
+                }}
+                placeholder='Describe changes...'
+                className='min-w-0 flex-1 bg-transparent border-0 text-sm text-zinc-900 outline-none placeholder:text-zinc-500'
+              />
+              <button
+                onClick={() => handleUpdates(prompt)}
+                aria-label='Send message'
+                disabled={loading}
+                className={`shrink-0 rounded-xl p-2.5 transition ${loading ? 'bg-zinc-300 text-zinc-500 cursor-not-allowed' : 'bg-zinc-900 text-white hover:bg-zinc-700'}`}>
+                <Send size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
       </aside>
       <main className='min-w-0 min-h-0 flex-1 flex flex-col'>
         <div className='h-14 w-full shrink-0 px-4 flex justify-between items-center border-b border-white/10 bg-black/80'>
@@ -102,39 +184,7 @@ function Editor() {
 
     )
   }
-  function Chat() {
-    return (
-      <div className='min-h-0 flex-1 flex flex-col'>
-        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-4 space-y-4'>
-        {message.map((msg, index) => (
-          <div
-            key={index}
-            className={`max-w-[85%] ${msg.role === "user" ? "ml-auto" : "mr-auto"}`}>
-            <div className={`px-4 py-2 rounded-lg text-sm ${msg.role === "user" ? "bg-blue-500 text-white" : "bg-gray-800 text-white"}`}>
-              {msg.content}
-            </div>
 
-          </div>
-        ))}
-        </div>
-        <div className='shrink-0 border-t border-white/10 bg-zinc-950 p-3'>
-          <div className='flex items-end gap-2'>
-            <textarea rows={1}
-            onChange={(e)=>{setPrompt(e.target.value)}}
-            placeholder='Describe changes...'
-              className='min-w-0 flex-1 resize-none rounded-xl px-4 py-3 bg-white/5 border border-white/10 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400'></textarea>
-            <button
-            onClick={handleUpdates} 
-            aria-label='Send message' className='shrink-0 rounded-xl bg-white p-3 text-black transition hover:bg-zinc-200'>
-              <Send size={14}  />
-            </button>
-
-          </div>
-        </div>
-      </div>
-
-    )
-  }
 }
 
 
