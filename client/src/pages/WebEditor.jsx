@@ -191,7 +191,8 @@ function WebEditor() {
           </div>
 
         </div>
-        <iframe title='Website preview' ref={iframeRef} className='min-h-0 flex-1 w-full border-0 bg-white'></iframe>
+        <iframe sandbox='allow-scripts allow-same-origin allow-forms'
+        title='Website preview' ref={iframeRef} className='min-h-0 flex-1 w-full border-0 bg-white'></iframe>
       </main>
       <AnimatePresence>
         {openChat && (
@@ -308,7 +309,8 @@ function WebEditor() {
             >
               <X size={20} />
             </button>
-            <iframe title='Full website preview' className='w-full h-full border-0 bg-white' srcDoc={code} />
+            <iframe sandbox='allow-scripts allow-same-origin allow-forms'
+            title='Full website preview' className='w-full h-full border-0 bg-white' srcDoc={code} />
 
           </motion.div>
         )}

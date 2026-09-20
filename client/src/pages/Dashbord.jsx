@@ -10,12 +10,28 @@ import { useNavigate } from 'react-router-dom';
 
 
 
+
 function Dashbord() {
   const { userData } = useSelector(state => state.user);
   const Navigate = useNavigate();
   const [websites, setWebsites] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+
+async function handleDeploy(id){
+  try{
+    const result = await axios.post(
+      `${import.meta.env.VITE_SERVER_URL}/website/deploy/${id}`,
+      {},
+      { withCredentials: true }
+    );
+    window.open(result.data.Url, '_blank');
+  } 
+  catch(err){
+    console.error('Error deploying website:', err);
+  }
+}
 
   useEffect(() => {
     const handleGetAllWebsites = async () => {
@@ -93,7 +109,7 @@ function Dashbord() {
               border border-white/10 overflow-hidden 
               hover:bg-white/10 transition 
                flex flex-col'>
-               <div onClick={()=>Navigate(`/editor/${web,_id}`)}
+               <div onClick={()=>Navigate(`/editor/${web._id}`)}
                className='relative h-[160px] overflow-hidden bg-black cursor-pointer'>
               <iframe
                 title={`${web.title || 'Website'} preview`}
@@ -109,7 +125,9 @@ function Dashbord() {
                   Last Update : {""} 
                   {new Date(web.updatedAt).toLocaleDateString()}
                 </p>
-                {!web.deployed ?(<button className='mt-auto flex items-center justify-center gap-2
+                {!web.deployed ?(<button
+                onClick={() => handleDeploy(web._id)}
+                 className='mt-auto flex items-center justify-center gap-2
                 px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 trandition'>
                   <Rocket size={18}/>Deploy</button>) :(<button className='mt-auto flex items-center justify-center gap-2
                 px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 

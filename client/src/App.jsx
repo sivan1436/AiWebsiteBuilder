@@ -8,7 +8,7 @@ import Dashbord from './pages/Dashbord.jsx';
 import Generate from './pages/Generate.jsx';
 import { Navigate } from 'react-router-dom';
 import WebEditor from './pages/WebEditor.jsx';
-
+import LiveSite from './pages/LiveSite.jsx';
 
 
 
@@ -23,6 +23,7 @@ export default function App() {
     <Route path="/dashboard" element={userData ? <Dashbord/> : <Home />} />
     <Route path="/generate" element={userData ? <Generate/> : <Home />} />
    <Route path="/editor/:id" element={userData?<WebEditor /> : <Home />}/>
+    <Route path="/site/:id" element={<LiveSite />}/>
    </Routes>
    </BrowserRouter>
   )
