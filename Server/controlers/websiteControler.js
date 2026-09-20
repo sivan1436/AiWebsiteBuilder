@@ -165,7 +165,7 @@ export async function GenerateWebSite(req, res) {
                 parsed = await extractJson(raw)
             }
         }
-        if (!parsed.code) {
+        if (!parsed?.code) {
             console.log("parsed.code is missing, raw response:", raw)
             return res.status(500).json({
                 message: "website generation failed",
@@ -181,7 +181,7 @@ export async function GenerateWebSite(req, res) {
         user.credits -= 50
         await user.save()
         return res.status(200).json({
-            Website: website._id,
+            websiteId: website._id,
             remainingCredits: user.credits
         })
 

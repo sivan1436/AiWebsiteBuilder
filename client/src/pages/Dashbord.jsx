@@ -1,4 +1,4 @@
-import { ArrowLeft, Rocket } from 'lucide-react';
+import { ArrowLeft, Rocket, Share2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -112,7 +112,8 @@ function Dashbord() {
                 {!web.deployed ?(<button className='mt-auto flex items-center justify-center gap-2
                 px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 trandition'>
                   <Rocket size={18}/>Deploy</button>) :(<button className='mt-auto flex items-center justify-center gap-2
-                px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 trandition'>Share Link</button>)}
+                px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 
+                hover:scale-105 trandition'><Share2 size={18}/>Share Link</button>)}
 
                </div>
               </motion.div>
