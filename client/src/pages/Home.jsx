@@ -57,12 +57,14 @@ function Home() {
           </div>
           <div className="flex items-center gap-5">
             <div className='hidden md:inline text-sm 
-        text-zinc-400 hover:text-white cursor-pointer'>
+        text-zinc-400 hover:text-white cursor-pointer'
+        onClick={()=>navigate('/pricing')}>
               Pricing
             </div>
             {userData &&
               <div className='flex items-center gap-2 text-sm rounded-full px-3 py-1.5 bg-white/5 border border-white/10
-        hover:bg-white/10 cursor-pointer transition' >
+        hover:bg-white/10 cursor-pointer transition'
+        onClick={() => navigate('/pricing')}>
                 <CoinsIcon size={20} className='hidden md:flex inline-block mr-1 text-yellow-400 ' />
                 <span className='text-zinc-300'>credits:<span>{userData.credits}</span> <span className='font-semibold'>+</span></span>
               </div>}

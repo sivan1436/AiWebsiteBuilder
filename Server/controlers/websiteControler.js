@@ -270,6 +270,8 @@ export async function Changes(req, res) {
         }
         website.conversation.push({ role: "user", content: prompt }, { role: "Ai", content: parsed.message })
         website.latestCode = parsed.code
+        website.deployed = false
+        website.deployUrl = ""
         await website.save()
         user.credits -= 25
         await user.save()

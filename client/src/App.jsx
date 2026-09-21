@@ -9,6 +9,7 @@ import Generate from './pages/Generate.jsx';
 import { Navigate } from 'react-router-dom';
 import WebEditor from './pages/WebEditor.jsx';
 import LiveSite from './pages/LiveSite.jsx';
+import Pricing from './pages/Pricing.jsx';
 
 
 
@@ -24,6 +25,9 @@ export default function App() {
     <Route path="/generate" element={userData ? <Generate/> : <Home />} />
    <Route path="/editor/:id" element={userData?<WebEditor /> : <Home />}/>
     <Route path="/site/:id" element={<LiveSite />}/>
+    <Route path="/pricing" element={userData ? <Pricing /> : <Home />}/>
+        
+
    </Routes>
    </BrowserRouter>
   )

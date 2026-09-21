@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Code2, MessageSquare, Monitor, Rocket, Send, X } from "lucide-react";
@@ -46,6 +46,11 @@ function WebEditor() {
       )
 
       setCode(result.data.code)
+      setWeb((currentWebsite) => ({
+        ...currentWebsite,
+        latestCode: result.data.code,
+        deployed: false,
+      }))
       setLoading(false)
       setMessage((prev) => {
         const withoutLoading = prev.filter((msg) => !(msg.role === 'Ai' && msg.isLoading))
@@ -56,6 +61,28 @@ function WebEditor() {
       setLoading(false)
       setMessage((prev) => prev.filter((msg) => !(msg.role === 'Ai' && msg.isLoading)))
       setError(error.response?.data?.message || 'Failed to update website')
+    }
+  }
+
+  async function handleDeploy() {
+    if (web.deployed || loading) return;
+
+    try {
+      const result = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/website/deploy/${id}`,
+        {},
+        { withCredentials: true }
+      );
+      setWeb((currentWebsite) => ({
+        ...currentWebsite,
+        deployed: true,
+        deployUrl: result.data.Url,
+      }));
+      window.open(result.data.Url, '_blank');
+    }
+    catch (err) {
+      console.error('Error deploying website:', err);
+      setError(err.response?.data?.message || 'Failed to deploy website');
     }
   }
 
@@ -172,8 +199,14 @@ function WebEditor() {
         <div className='h-14 w-full shrink-0 px-4 flex justify-between items-center border-b border-white/10 bg-black/80'>
           <span className='text-xs text-zinc-400'>Live preview</span>
           <div className='flex gap-2'>
-            <button className='flex items-center gap-2 px-4 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-sm font-semibold transition hover:scale-105'>
-              <Rocket size={14} />Deploy
+            <button
+            onClick={handleDeploy}
+            disabled={web.deployed || loading}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition ${web.deployed || loading
+              ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105'
+              }`}>
+              <Rocket size={14} />{web.deployed ? 'Deployed' : 'Deploy'}
             </button>
              <button className='p-2 lg:hidden' onClick={()=>setOpenChat(true)}><MessageSquare size={18} /></button>
             <button
