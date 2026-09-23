@@ -12,15 +12,26 @@ import { useNavigate } from 'react-router-dom';
 
 
 function Home() {
-  const highlights = ["AI Generated Code",
-    "Fully Responsive Layouts",
-    "Production Ready Websites"
+  const highlights = [
+    {
+      title: "AI Generated Code",
+      description: "Turn a simple idea into clean, structured HTML, CSS, and JavaScript in minutes."
+    },
+    {
+      title: "Fully Responsive Layouts",
+      description: "Create polished experiences that adapt smoothly across phones, tablets, and desktops."
+    },
+    {
+      title: "Production Ready Websites",
+      description: "Start with a professional foundation built for real visitors, real content, and real growth."
+    }
   ]
   const { userData } = useSelector(state => state.user)
   const [openLogin, setOpenLogin] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
   const [openProfile, setOpenProfile] = useState(false)
-  
+  const [websites, setWebsites] = useState(null);
+  const [websiteError, setWebsiteError] = useState(null);
   
   
   const navigate = useNavigate();
@@ -43,6 +54,24 @@ function Home() {
       console.error(error);
     }
   }
+  useEffect(() => {
+    if (!userData) {
+      return
+    }
+    const handleGetAllWebsites = async () => {
+      
+      try {
+        const result = await axios.get(`${import.meta.env.VITE_SERVER_URL}/website/get`, { withCredentials: true });
+        setWebsites(result.data || []);
+        
+      } catch (error) {
+        console.error('Error fetching websites:', error);
+        setWebsiteError(error.response?.data?.message || 'Failed to fetch websites');
+        
+      }
+    };
+    handleGetAllWebsites();
+  }, [userData]);
 
 
   return (
@@ -147,30 +176,78 @@ function Home() {
           <button
             onClick={() => { userData ? navigate('/dashboard') : setOpenLogin(true) }}
             className='rounded-xl bg-white px-10 py-4 font-semibold text-black shadow-[0_12px_40px_rgba(255,255,255,0.12)] transition hover:scale-105 hover:bg-zinc-200'>
-            {userData ? 'Dashboard' : 'Get Started'}
+            {userData ? 'Go to Dashboard' : 'Get Started'}
           </button>
         </motion.div>
       </section>
       <section className='mx-auto max-w-7xl px-6 py-32'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
-          {highlights.map((h, index) => (
-            <motion.div
-              key={index}
-              initial={{ y: 40, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: index * 0.2 }}
-              className='rounded-2xl border border-white/10 bg-white/[0.04] p-8 shadow-[0_20px_80px_rgba(0,0,0,0.25)] transition hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07]'>
-              <h1
-                className='text-xl font-semibold mb-3'>{h}</h1>
-              <p className='text-zinc-400 text-sm'>
-                GenWeb.ai builds real websites-clean code,
-                animation,responsiveness and scalable structure.
-              </p>
-            </motion.div>
-          ))}
-        </div>
-
+        {!userData ? (
+          <div className='grid grid-cols-1 gap-10 md:grid-cols-3'>
+            {highlights.map((highlight, index) => (
+              <motion.div
+                key={highlight.title}
+                initial={{ y: 40, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                className='rounded-2xl border border-white/10 bg-white/[0.04] p-8 shadow-[0_20px_80px_rgba(0,0,0,0.25)] transition hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07]'>
+                <h2 className='mb-3 text-xl font-semibold'>{highlight.title}</h2>
+                <p className='text-sm text-zinc-400'>{highlight.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div>
+            <h2 className='mb-6 text-2xl font-semibold'>Your Websites</h2>
+            {websiteError && <p className='text-sm text-red-400'>{websiteError}</p>}
+            {!websiteError && websites === null && (
+              <p className='text-zinc-400'>Loading your websites...</p>
+            )}
+            {!websiteError && websites?.length === 0 && (
+              <div className='rounded-2xl border border-white/10 bg-white/[0.04] p-8 text-center'>
+                <p className='text-zinc-400'>You have no websites yet.</p>
+                <button
+                  onClick={() => navigate('/generate')}
+                  className='mt-4 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-zinc-200'
+                >
+                  Create your first website
+                </button>
+              </div>
+            )}
+            {websites?.length > 0 && (
+              <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+                {websites.slice(0, 3).map((website, index) => (
+                  <motion.button
+                    key={website._id}
+                    type='button'
+                    onClick={() => navigate(`/editor/${website._id}`)}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.08 }}
+                    className='overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.08]'
+                  >
+                    <div className='relative h-44 overflow-hidden bg-white'>
+                      <iframe
+                        title={`${website.title || 'Website'} preview`}
+                        srcDoc={website.latestCode || ''}
+                        className='pointer-events-none absolute inset-0 h-[140%] w-[140%] origin-top-left scale-[0.72]'
+                      />
+                    </div>
+                    <div className='p-5'>
+                      <h3 className='truncate font-semibold'>{website.title || 'Untitled Website'}</h3>
+                      <p className='mt-2 text-xs text-zinc-500'>
+                        Updated {new Date(website.updatedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </section>
+
+
+
       <footer className=' text-center py-10 text-zinc-500 text-sm border-t border-white/10'>
         &copy; {new Date().getFullYear()} GenWeb.ai. All rights reserved.
       </footer>
