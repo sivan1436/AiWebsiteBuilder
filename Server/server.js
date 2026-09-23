@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import userRouter from "./Routes/userRoutes.js";
 import webRouter from "./Routes/websiteRoutes.js";
+import BillingRouter from "./Routes/BillingRoutes.js";
 
 
 
@@ -26,7 +27,8 @@ app.use(cors({
 }));
 app.use("/api/auth",authRouter);
 app.use("/api/user",userRouter);
-app.use("/website",webRouter)
+app.use("/website",webRouter);
+app.use("/billing",BillingRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

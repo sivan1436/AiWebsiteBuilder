@@ -2,6 +2,9 @@ import { ArrowLeft, Check, Coins } from 'lucide-react'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
+import axios from 'axios';
 
 
 
@@ -56,7 +59,26 @@ const plans = [
 ]
 
 function Pricing() {
+    const [loding,setLoading] = useState(false)
     const navigate = useNavigate()
+    const userData = useSelector((state) => state.user)
+    const handleBuy= async (planKey) => {
+        if(!userData){
+    navigate('/')
+    return
+        }
+        if(planKey === 'free'){
+            navigate('/dashboard')
+            return
+        }
+        try{
+           const res = await axios.post(import.meta.env.VITE_SERVER_URL + '/billing', {planType:planKey}, {withCredentials:true});
+           window.location.href(res.data.sessionUrl)
+        }
+        catch(err){
+            console.log(err)
+        }
+    }
     return (
         <div className='relaive min-h-screen overflow-hidden bg-[#050505] text-white px-6 pt-16
     pb-24'>
