@@ -157,12 +157,18 @@ function Dashbord() {
                     {new Date(web.updatedAt).toLocaleDateString()}
                   </p>
                   {!web.deployed ? (<button
-                    onClick={() => handleDeploy(web._id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDeploy(web._id);
+                      }}
                     className='mt-auto flex items-center justify-center gap-2
                 px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 trandition'>
                     <Rocket size={18} />Deploy</button>) : (<motion.button
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => handleCopyLink(web._id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleCopyLink(web._id);
+                      }}
                       className={`mt-auto flex items-center justify-center gap-2
                 px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 
                 hover:scale-105 trandition ${copied ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-white/10 hover:bg-white/20 border border-white/20"}`}>
