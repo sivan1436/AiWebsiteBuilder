@@ -47,11 +47,8 @@ function Dashbord() {
     };
     handleGetAllWebsites();
   }, [userData, Navigate]);
-  async function handleCopyLink(id) {
+  async function handleCopyLink(id, deployUrl) {
     try {
-      const result = await axios.get(`${import.meta.env.VITE_SERVER_URL}/website/get/${id}`, { withCredentials: true });
-      const deployUrl = result.data?.deployUrl;
-
       if (!deployUrl) {
         throw new Error('This website does not have a deployment link yet.');
       }
@@ -66,8 +63,11 @@ function Dashbord() {
         document.body.appendChild(input);
         input.focus();
         input.select();
-        document.execCommand('copy');
+        const copied = document.execCommand('copy');
         input.remove();
+        if (!copied) {
+          throw new Error('Clipboard access is unavailable.');
+        }
       }
 
       setCopiedUrl(id);
@@ -167,7 +167,7 @@ function Dashbord() {
                       whileTap={{ scale: 0.95 }}
                       onClick={(event) => {
                         event.stopPropagation();
-                        handleCopyLink(web._id);
+                        handleCopyLink(web._id, web.deployUrl);
                       }}
                       className={`mt-auto flex items-center justify-center gap-2
                 px-4 py-2 rounded-xl  text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 
