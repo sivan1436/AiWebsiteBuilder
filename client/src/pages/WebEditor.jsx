@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Code2, MessageSquare, Monitor, Rocket, Send, X } from "lucide-react";
+import { Code2, Download, MessageSquare, Monitor, Rocket, Send, X } from "lucide-react";
 import {motion } from "motion/react";
 import { AnimatePresence } from 'motion/react';
 import Editor from '@monaco-editor/react';
+import JSZip from 'jszip';
 
 function WebEditor() {
   const [web, setWeb] = useState(null)
@@ -84,6 +85,27 @@ function WebEditor() {
       console.error('Error deploying website:', err);
       setError(err.response?.data?.message || 'Failed to deploy website');
     }
+  }
+
+  async function handleDownload() {
+    if (!code) return;
+
+    const fileName = (web.title || 'genweb-site')
+      .trim()
+      .replace(/[^a-z0-9]+/gi, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase() || 'genweb-site';
+    const zip = new JSZip();
+    zip.file('index.html', code);
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${fileName}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 
   useEffect(() => {
@@ -216,6 +238,15 @@ function WebEditor() {
             >
              
               <Code2 size={18} />
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={!code}
+              className='p-2 rounded-lg hover:bg-white/10 transition disabled:cursor-not-allowed disabled:opacity-40'
+              aria-label='Download source code'
+              title='Download source code'
+            >
+              <Download size={18} />
             </button>
             <button onClick={()=>setShowFullPreview(true)}
             className='p-2 rounded-lg hover:bg-white/10 transition' aria-label='Open full preview'>
