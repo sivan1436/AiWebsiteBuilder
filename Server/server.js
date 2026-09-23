@@ -24,7 +24,7 @@ const port = process.env.PORT || 4000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: process.env.CORSE_ORIGIN,
+    origin: "https://aiwebsitebuilderclient.onrender.com",
     credentials: true
 }));
 app.use("/api/auth",authRouter);
