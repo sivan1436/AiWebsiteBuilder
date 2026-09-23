@@ -14,9 +14,9 @@ export const PLANS = {
         credits : 1000,
         plan : "Pro",
     },
-    premium : {
+    enterprise : {
         price : 499,
-        credits : 2500,
-        plan : "Premium",
+        credits : 5000,
+        plan : "Enterprise",
     }
 };

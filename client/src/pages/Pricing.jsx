@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
 import axios from 'axios';
+import { load } from '@cashfreepayments/cashfree-js';
 
 
 
@@ -28,7 +29,7 @@ const plans = [
     {
         key: "pro",
         name: "Pro",
-        price: "499",
+        price: "199",
         credits: "1000",
         description: "For professionals who need more",
         features: [
@@ -43,7 +44,7 @@ const plans = [
     {
         key: "enterprise",
         name: "Enterprise",
-        price: "1499",
+        price: "499",
         credits: "5000",
         description: "For large teams and enterprises",
         features: [
@@ -59,7 +60,7 @@ const plans = [
 ]
 
 function Pricing() {
-    const [loding,setLoading] = useState(false)
+    const [loding,setLoading] = useState(null)
     const navigate = useNavigate()
     const userData = useSelector((state) => state.user)
     const handleBuy= async (planKey) => {
@@ -71,12 +72,20 @@ function Pricing() {
             navigate('/dashboard')
             return
         }
+        setLoading(planKey)
         try{
            const res = await axios.post(import.meta.env.VITE_SERVER_URL + '/billing', {planType:planKey}, {withCredentials:true});
-           window.location.href(res.data.sessionUrl)
+                     const cashfree = await load({ mode: 'sandbox' });
+                     await cashfree.checkout({
+                         paymentSessionId: res.data.paymentSessionId,
+                         redirectTarget: '_self',
+                     });
+
+              setLoading(null)       
         }
         catch(err){
             console.log(err)
+            setLoading(null)
         }
     }
     return (
@@ -146,12 +155,14 @@ function Pricing() {
                         </ul>
 
                     <motion.button
+                    disabled={loding}
+                    onClick={() => handleBuy(p.key)}
                     whiletap={{ scale: 0.95 }}
                     className={`w-full py-3 rounded-xl font-semibold
                         transition ${p.popular ?
                          'bg-indigo-500 hover:bg-indigo-600' 
                          : 'bg-white/10 hover:bg-white/20'}`}>
-                        {p.button}
+                        {loding === p.key ? 'redirecting...' : p.button}
                     </motion.button>
                     
 

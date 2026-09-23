@@ -1,5 +1,5 @@
 import cashfreeClient from "../config/Cashfree.js";
-import { PLANS } from "../config/plans.js";
+import { PLANS } from "../config/Plan.js";
 
 
 
@@ -12,30 +12,21 @@ export async function BillingController(req,res) {
 return res.status(400).json({ message: "Invalid plan type or free plan selected." });
   } 
   const session = await cashfreeClient.createPaymentSession({
-    mode : "payment",
-    payment_method : ["card","upi"],
-    line_items : [
-        {
-            price_data :{
-                currency : "INR",
-                product_data :{
-                    name : `Genweb.ai ${planType.toUpperCase()} plan`
-                },
-                unit_amount : plan.price * 100,
-            },
-            quantity : 1
-        }
-    ],
-    metadata : {
-        userId : userId,
-        credits : plan.credits,
-        plan : plan.plan
+    orderId: `genweb_${userId}_${Date.now()}`,
+    orderAmount: plan.price,
+    customerId: String(userId),
+    customerEmail: req.user.email,
+    customerPhone: "9999999999",
+    returnUrl: `${process.env.VITE_DEPLOY_URL}/pricing?payment=success`,
+    notifyUrl: `${process.env.SERVER_URL || "http://localhost:4000"}/billing/webhook`,
+    orderTags: {
+      userId: String(userId),
+      credits: String(plan.credits),
+      plan: plan.plan,
     },
-    success_url : `${process.env.VITE_DEPLOY_URL}/`,
-    cancel_url : `${process.env.VITE_DEPLOY_URL}/pricing`
   });
 
- return res.status(200).json({ sessionUrl: session.url });
+ return res.status(200).json({ paymentSessionId: session.payment_session_id });
 }
   catch(err){
 return res.status(500).json({ message: `billing error : ${err.message}`, error: err.message });

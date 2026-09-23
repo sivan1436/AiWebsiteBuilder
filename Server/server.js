@@ -8,6 +8,7 @@ import cors from "cors";
 import userRouter from "./Routes/userRoutes.js";
 import webRouter from "./Routes/websiteRoutes.js";
 import BillingRouter from "./Routes/BillingRoutes.js";
+import { WebHook } from "./controlers/WebhookControler.js";
 
 
 
@@ -15,6 +16,7 @@ dns.setServers(["8.8.8.8","8.8.4.4"]);
 
 
 const app = express();
+app.post("/billing/webhook", express.raw({ type: "application/json" }), WebHook);
 dotenv.config();
 connectDB();
 
